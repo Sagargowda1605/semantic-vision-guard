@@ -1,0 +1,19 @@
+# Core
+numpy>=1.24
+opencv-python>=4.8
+pillow>=10.0
+
+# YOLOv8
+ultralytics>=8.2
+
+# CLIP
+open-clip-torch>=2.24
+
+# API (for step 3)
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+pydantic>=2.6
+
+# Utils
+tqdm>=4.66
