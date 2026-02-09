@@ -1,3 +1,5 @@
 .pt
 .weights
 .yolo
+data
+.env
