@@ -76,5 +76,5 @@ detections show lower and inconsistent scores — validating the guard concept.
 
 Sagar Mattikere Anand  
 M.Sc. Computer Science, Philipps University Marburg  
-[LinkedIn](https://linkedin.com/in/yourprofile) · 
+[LinkedIn](https://www.linkedin.com/in/sagar-mattikere-anand-273947245/) · 
 [GitHub](https://github.com/Sagargowda1605)
