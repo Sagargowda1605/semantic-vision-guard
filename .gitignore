@@ -3,3 +3,6 @@
 .yolo
 data
 .env
+yolov8n.pt
+yolov8s.pt
+_pycache__

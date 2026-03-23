@@ -18,6 +18,8 @@ class ClipScapper:
         text=self.tokenizer([prompt]).to(self.device)
         feat=self.model.encode_text(text)
         feat=feat/feat.norm(dim=1,keepdim=True)
+        # we normalize the text features to have a unit norm, 
+        # which is a common practice in CLIP-based models to ensure that the similarity scores are computed correctly.
         self._text_feat=feat
     
     @torch.no_grad
@@ -27,6 +29,11 @@ class ClipScapper:
             raise RuntimeError("Call set_prompt (prompt) before scoring images.")
         
         x=self.preprocess(img).unsqueeze(0).to(self.device)
+        # why we unsequeeze the image tensor?
+        # The unsqueeze(0) operation is used to add an extra dimension to the image tensor, 
+        # which is necessary because the CLIP model expects a batch of images as input.
+        # By unsqueezing the image tensor, we create a batch of size 1, 
+        # allowing us to pass a single image through the model for feature extraction and similarity scoring.
         feat=self.model.encode_image(x)
         feat=feat/feat.norm(dim=1,keepdim=True)
 
