@@ -6,3 +6,6 @@ data
 yolov8n.pt
 yolov8s.pt
 _pycache__
+__pycache__/
+*.pyc
+*.pyo
