@@ -68,7 +68,7 @@ detections show lower and inconsistent scores — validating the guard concept.
 - [x] YOLOv8 ROI extraction
 - [x] CLIP semantic verification  
 - [x] Real-time video pipeline
-- [ ] FastAPI REST endpoint
+- [x] FastAPI REST endpoint
 - [ ] ONNX export for optimized inference
 - [ ] TensorRT deployment
 
