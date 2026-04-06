@@ -5,6 +5,7 @@ data
 .env
 yolov8n.pt
 yolov8s.pt
+yolov8n.onnx
 _pycache__
 __pycache__/
 *.pyc
