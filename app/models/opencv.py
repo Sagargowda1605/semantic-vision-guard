@@ -24,7 +24,7 @@ def extract_rois(boxes,frame,clss,confs):
     for i in range(len(boxes)):
 
     
-        x1, y1, x2, y2 = boxes[i].tolist()
+        x1, y1, x2, y2 = boxes[i]
         x1=max(0,int(x1))
         x2=min(w,int(x2))
         y1=max(0,int(y1))

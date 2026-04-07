@@ -43,21 +43,24 @@ async def detect(file:UploadFile=File(...)):
             detections=process_frames(frame)
         elif suffix in [".mp4",".avi",".mov"]:
             cap=cv.VideoCapture(tmp_path)
-            frame_count=0
 
-            while frame_count<30: # Process first 30 frames for demo
-                ret,frame=cap.read()
-                if not ret:
-                    break
-                detections.extend(process_frames(frame))
-                frame_count+=1
-            
-                cv.imshow("frame",frame)
+            try:
+                frame_count=0
 
-                if cv.waitKey(1) & 0xff==ord("q"):
-                    break
-        cap.release()
-        cv.destroyAllWindows()
+                while frame_count<30: # Process first 30 frames for demo
+                    ret,frame=cap.read()
+                    if not ret:
+                        break
+                    detections.extend(process_frames(frame))
+                    frame_count+=1
+                
+                    cv.imshow("frame",frame)
+
+                    if cv.waitKey(1) & 0xff==ord("q"):
+                        break
+            finally:
+                    cap.release()
+                    cv.destroyAllWindows()
              
     finally:
         os.unlink(tmp_path)
