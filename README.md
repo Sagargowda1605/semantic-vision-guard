@@ -69,7 +69,7 @@ detections show lower and inconsistent scores — validating the guard concept.
 - [x] CLIP semantic verification  
 - [x] Real-time video pipeline
 - [x] FastAPI REST endpoint
-- [ ] ONNX export for optimized inference
+- [x] ONNX export for optimized inference
 - [ ] TensorRT deployment
 
 ## Author

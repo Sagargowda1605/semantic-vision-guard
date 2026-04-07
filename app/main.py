@@ -10,6 +10,7 @@ from PIL import Image
 from app.models.clip import ClipScapper
 from app.models.opencv import extract_rois,show_rois
 from app.models.yolo import COCO_CLASSES,detect_yolo
+from app.models.yolo_onxx import detect_yolo_onnx,postprocess
 
 app=FastAPI(title="Vision Guard API")
 
@@ -66,10 +67,11 @@ async def detect(file:UploadFile=File(...)):
 def process_frames(frame):
 
     result=[]
-    r0=detect_yolo(frame)
-    x1y1x2y2=r0.boxes.xyxy
-    confs=r0.boxes.conf
-    clss=r0.boxes.cls
+    r0=detect_yolo_onnx(frame)
+    final_boxes, final_confs, final_cls = postprocess(r0, frame, conf_threshold=0.25, iou_threshold=0.5)
+    x1y1x2y2=final_boxes
+    confs=final_confs
+    clss=final_cls
     rois=extract_rois(x1y1x2y2,frame,clss,confs)
     for roi in rois:
         crop=roi.crop_bgr
