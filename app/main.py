@@ -9,10 +9,14 @@ from fastapi.responses import FileResponse
 import numpy as np
 import os
 from PIL import Image
+from app.database import init_db,log_detection
 from app.models.clip import ClipScapper
 from app.models.opencv import extract_rois,show_rois
 from app.models.yolo import COCO_CLASSES,detect_yolo
 from app.models.yolo_onxx import detect_yolo_onnx,postprocess
+
+
+init_db()  # Initialize the database when the app starts
 
 app=FastAPI(title="Vision Guard API")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -107,4 +111,12 @@ def process_frames(frame):
                 "clip_score": round(float(sim),3),
                 "box": [int(x1),int(y1),int(x2),int(y2)]
             })
+            log_detection(
+                filename="temp_file",
+                yolo_class=COCO_CLASSES.get(cls_id,"unknown"),
+                yolo_conf=conf,
+                clip_score=sim,
+                status="detected",
+                bbox=[int(x1),int(y1),int(x2),int(y2)]
+            )
     return result

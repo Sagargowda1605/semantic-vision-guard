@@ -24,8 +24,8 @@ reducing false positives using vision-language understanding.
 - YOLOv8 (Ultralytics) — object detection
 - CLIP ViT-B/32 (OpenCLIP) — zero-shot semantic verification  
 - OpenCV — video processing and visualization
-- FastAPI — REST API for inference (coming soon)
-- ONNX/TensorRT — optimized deployment (coming soon)
+- FastAPI — REST API for inference 
+- ONNX/TensorRT — optimized deployment
 
 ## Project Structure
 ```

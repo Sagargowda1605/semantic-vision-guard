@@ -10,3 +10,4 @@ _pycache__
 __pycache__/
 *.pyc
 *.pyo
+vision_guard.db
