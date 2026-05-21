@@ -4,6 +4,8 @@ from fastapi import FastAPI,UploadFile,File
 from typing import List
 import cv2 as cv
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import numpy as np
 import os
 from PIL import Image
@@ -13,6 +15,13 @@ from app.models.yolo import COCO_CLASSES,detect_yolo
 from app.models.yolo_onxx import detect_yolo_onnx,postprocess
 
 app=FastAPI(title="Vision Guard API")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 2. Join it with "static" to point exactly to your static folder
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+# Mount the static directory using the absolute path
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 clip=ClipScapper()
 
@@ -25,7 +34,9 @@ clip_threshold=0.20
 
 @app.get("/")
 def home():
-    return {"message":"Welcome to Vision Guard API"}
+    # This assumes your HTML file is named 'index.html' and is inside the 'static' folder
+    ui_path = os.path.join(STATIC_DIR, "index.html")
+    return FileResponse(ui_path)
 
 @app.post("/detect/")
 async def detect(file:UploadFile=File(...)):

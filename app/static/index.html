@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semantic Vision Guard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #111318;
+    --bg3: #181c23;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8eaf0;
+    --text2: #7a8090;
+    --text3: #4a5060;
+    --green: #00e87a;
+    --green-dim: rgba(0,232,122,0.12);
+    --red: #ff4757;
+    --red-dim: rgba(255,71,87,0.12);
+    --amber: #ffb020;
+    --amber-dim: rgba(255,176,32,0.1);
+    --accent: #3d7fff;
+    --accent-dim: rgba(61,127,255,0.12);
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(61,127,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(61,127,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .layout {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-block { display: flex; align-items: center; gap: 12px; }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(61,127,255,0.3);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+    margin-top: 2px;
+  }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--green-dim);
+    border: 1px solid rgba(0,232,122,0.2);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--green);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  /* UPLOAD PANEL */
+  .panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .panel-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text2);
+  }
+
+  .panel-body { padding: 18px; }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 1.5px dashed var(--border2);
+    border-radius: 10px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+    background: var(--bg3);
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+
+  .drop-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block;
+    opacity: 0.5;
+  }
+
+  .drop-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .drop-sub {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  /* FILE PREVIEW */
+  .file-preview {
+    display: none;
+    margin-top: 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .file-preview.show { display: flex; }
+
+  .file-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .file-size {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+
+  .clear-btn {
+    background: none; border: none;
+    color: var(--text3); cursor: pointer;
+    font-size: 16px; padding: 0 4px;
+    transition: color .15s;
+  }
+
+  .clear-btn:hover { color: var(--red); }
+
+  /* VIDEO PREVIEW */
+  #videoPreview {
+    display: none;
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 14px;
+    max-height: 200px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    background: #000;
+  }
+
+  /* SETTINGS */
+  .settings-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .setting-block { display: flex; flex-direction: column; gap: 5px; }
+
+  .setting-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+  }
+
+  .setting-input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s;
+    width: 100%;
+  }
+
+  .setting-input:focus { border-color: var(--accent); }
+
+  /* ANALYZE BUTTON */
+  .analyze-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 13px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all .15s;
+    text-transform: uppercase;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .analyze-btn:hover:not(:disabled) {
+    background: #5a8fff;
+    transform: translateY(-1px);
+  }
+
+  .analyze-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* PROGRESS */
+  .progress-bar {
+    display: none;
+    margin-top: 12px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar.show { display: block; }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: progressAnim 2s ease-in-out infinite;
+  }
+
+  @keyframes progressAnim {
+    0% { width: 0%; margin-left: 0; }
+    50% { width: 70%; margin-left: 10%; }
+    100% { width: 0%; margin-left: 100%; }
+  }
+
+  /* RESULTS PANEL */
+  .results-empty {
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  .empty-icon {
+    font-size: 2.5rem;
+    opacity: 0.15;
+    margin-bottom: 12px;
+  }
+
+  .empty-text {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  /* SUMMARY BAR */
+  .summary-bar {
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-bar.show { display: grid; }
+
+  .summary-stat {
+    background: var(--bg2);
+    padding: 14px 16px;
+    text-align: center;
+  }
+
+  .summary-val {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .summary-label {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  /* DETECTION CARDS */
+  .detections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  .detections-list::-webkit-scrollbar { width: 4px; }
+  .detections-list::-webkit-scrollbar-track { background: transparent; }
+  .detections-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .detection-card {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    transition: background .15s;
+    animation: slideIn .2s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .detection-card:hover { background: var(--bg3); }
+  .detection-card:last-child { border-bottom: none; }
+
+  .det-index {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    width: 24px;
+    text-align: right;
+  }
+
+  .det-main { min-width: 0; }
+
+  .det-class {
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: capitalize;
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .det-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  .badge-verified {
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid rgba(0,232,122,0.2);
+  }
+
+  .badge-suspicious {
+    background: var(--red-dim);
+    color: var(--red);
+    border: 1px solid rgba(255,71,87,0.2);
+  }
+
+  .det-scores {
+    display: flex; gap: 12px; align-items: center;
+  }
+
+  .score-item {
+    display: flex; align-items: center; gap: 5px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .score-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .score-label { color: var(--text3); }
+  .score-val { color: var(--text); }
+
+  .det-box {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    text-align: right;
+    line-height: 1.7;
+    white-space: nowrap;
+  }
+
+  /* SCORE BAR */
+  .score-bars { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+
+  .score-bar-row { display: flex; align-items: center; gap: 8px; }
+
+  .score-bar-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    width: 50px;
+    text-align: right;
+  }
+
+  .score-bar-track {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width .6s ease;
+  }
+
+  .score-bar-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    width: 32px;
+  }
+
+  /* TABS */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 10px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .15s;
+    background: none; border-top: none; border-left: none; border-right: none;
+  }
+
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--text2); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* RAW JSON */
+  .json-view {
+    padding: 16px 18px;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.8;
+    color: var(--text2);
+    max-height: 500px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .json-key { color: #7ec8e3; }
+  .json-str { color: #a8e6cf; }
+  .json-num { color: #ffb347; }
+  .json-bool { color: #ff6b6b; }
+
+  /* ERROR STATE */
+  .error-box {
+    display: none;
+    margin: 14px 18px;
+    padding: 12px 14px;
+    background: var(--red-dim);
+    border: 1px solid rgba(255,71,87,0.2);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--red);
+  }
+
+  /* ENDPOINT INDICATOR */
+  .endpoint-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 12px;
+    padding: 9px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .endpoint-method {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--green);
+    background: var(--green-dim);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
+  .endpoint-url {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    flex: 1;
+  }
+
+  .endpoint-edit {
+    background: none; border: none;
+    color: var(--text3); cursor: pointer;
+    font-size: 12px;
+    transition: color .15s;
+  }
+  .endpoint-edit:hover { color: var(--accent); }
+
+  /* RESPONSIVE */
+  @media (max-width: 750px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .summary-bar { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <header>
+    <div class="logo-block">
+      <div class="logo-icon">🛡</div>
+      <div>
+        <div class="logo-text">Vision Guard</div>
+        <div class="logo-sub">YOLO · CLIP · Semantic Verification</div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      API READY
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- LEFT: UPLOAD PANEL -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Input</div>
+        </div>
+        <div class="panel-body">
+
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="cursor: pointer;">
+            <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.mp4,.avi,.mov">
+            <span class="drop-icon">📁</span>
+            <div class="drop-title">Drop video or image here</div>
+            <div class="drop-sub">.mp4 .avi .mov .jpg .png</div>
+          </div>
+
+          <video id="videoPreview" controls muted></video>
+
+          <div class="file-preview" id="filePreview">
+            <span class="file-name" id="fileName">—</span>
+            <span class="file-size" id="fileSize">—</span>
+            <button class="clear-btn" onclick="clearFile()">✕</button>
+          </div>
+
+          <div class="settings-row">
+            <div class="setting-block">
+              <div class="setting-label">CLIP Threshold</div>
+              <input class="setting-input" type="number" id="threshold" value="0.22" min="0" max="1" step="0.01">
+            </div>
+            <div class="setting-block">
+              <div class="setting-label">Max Frames</div>
+              <input class="setting-input" type="number" id="maxFrames" value="30" min="1" max="300">
+            </div>
+          </div>
+
+          <button class="analyze-btn" id="analyzeBtn" onclick="runDetection()" disabled>
+            <span id="btnIcon">▶</span>
+            <span id="btnText">ANALYZE</span>
+          </button>
+
+          <div class="progress-bar" id="progressBar">
+            <div class="progress-fill"></div>
+          </div>
+
+          <div class="endpoint-row">
+            <span class="endpoint-method">POST</span>
+            <span class="endpoint-url" id="endpointDisplay">http://127.0.0.1:8000/detect/</span>
+            <button class="endpoint-edit" onclick="editEndpoint()" title="Edit endpoint">✎</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS PANEL -->
+    <div>
+      <div class="panel">
+        <div class="summary-bar" id="summaryBar">
+          <div class="summary-stat">
+            <div class="summary-val" id="totalCount">—</div>
+            <div class="summary-label">Total</div>
+          </div>
+          <div class="summary-stat">
+            <div class="summary-val" style="color:var(--green)" id="verifiedCount">—</div>
+            <div class="summary-label">Verified</div>
+          </div>
+          <div class="summary-stat">
+            <div class="summary-val" style="color:var(--red)" id="suspCount">—</div>
+            <div class="summary-label">Suspicious</div>
+          </div>
+          <div class="summary-stat">
+            <div class="summary-val" id="classCount">—</div>
+            <div class="summary-label">Classes</div>
+          </div>
+        </div>
+
+        <div class="tab-bar">
+          <button class="tab active" onclick="switchTab('detections', this)">Detections</button>
+          <button class="tab" onclick="switchTab('raw', this)">Raw JSON</button>
+        </div>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <div class="tab-content active" id="tab-detections">
+          <div class="results-empty" id="emptyState">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-text">No results yet.<br>Upload a file and click Analyze.</div>
+          </div>
+          <div class="detections-list" id="detectionsList" style="display:none"></div>
+        </div>
+
+        <div class="tab-content" id="tab-raw">
+          <div class="json-view" id="jsonView">// Results will appear here</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let selectedFile = null;
+  let apiEndpoint = 'http://127.0.0.1:8000/detect/';
+  const THRESHOLD = () => parseFloat(document.getElementById('threshold').value) || 0.22;
+
+  // Drag and drop
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+
+  document.getElementById('fileInput').addEventListener('change', e => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  function handleFile(file) {
+    selectedFile = file;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = formatSize(file.size);
+    document.getElementById('filePreview').classList.add('show');
+    document.getElementById('analyzeBtn').disabled = false;
+
+    // Video preview
+    const vid = document.getElementById('videoPreview');
+    if (file.type.startsWith('video/')) {
+      vid.src = URL.createObjectURL(file);
+      vid.style.display = 'block';
+    } else if (file.type.startsWith('image/')) {
+      vid.style.display = 'none';
+      // Could show img preview here
+    } else {
+      vid.style.display = 'none';
+    }
+
+    // Clear previous results
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('detectionsList').style.display = 'none';
+    document.getElementById('summaryBar').classList.remove('show');
+    document.getElementById('errorBox').style.display = 'none';
+    document.getElementById('jsonView').textContent = '// Results will appear here';
+  }
+
+  function clearFile() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('filePreview').classList.remove('show');
+    document.getElementById('videoPreview').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('detectionsList').style.display = 'none';
+    document.getElementById('summaryBar').classList.remove('show');
+    document.getElementById('errorBox').style.display = 'none';
+  }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(1) + ' MB';
+  }
+
+  async function runDetection() {
+    if (!selectedFile) return;
+
+    const btn = document.getElementById('analyzeBtn');
+    const progress = document.getElementById('progressBar');
+    const errorBox = document.getElementById('errorBox');
+
+    btn.disabled = true;
+    document.getElementById('btnIcon').textContent = '⏳';
+    document.getElementById('btnText').textContent = 'ANALYZING...';
+    progress.classList.add('show');
+    errorBox.style.display = 'none';
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      renderResults(data);
+
+    } catch (err) {
+      errorBox.style.display = 'block';
+      errorBox.textContent = '⚠ ' + err.message;
+      // If backend is offline, show demo data for presentation purposes
+      if (err.message.includes('fetch') || err.message.includes('Failed')) {
+        errorBox.textContent = '⚠ Cannot reach API at ' + apiEndpoint + ' — showing demo data below.';
+        renderResults(getDemoData());
+      }
+    } finally {
+      btn.disabled = false;
+      document.getElementById('btnIcon').textContent = '▶';
+      document.getElementById('btnText').textContent = 'ANALYZE';
+      progress.classList.remove('show');
+    }
+  }
+
+  function renderResults(data) {
+    const detections = data.detections || [];
+    const threshold = THRESHOLD();
+
+    // Summary
+    const verified = detections.filter(d => d.clip_score >= threshold);
+    const suspicious = detections.filter(d => d.clip_score < threshold);
+    const classes = new Set(detections.map(d => d.class)).size;
+
+    document.getElementById('totalCount').textContent = detections.length;
+    document.getElementById('verifiedCount').textContent = verified.length;
+    document.getElementById('suspCount').textContent = suspicious.length;
+    document.getElementById('classCount').textContent = classes;
+    document.getElementById('summaryBar').classList.add('show');
+
+    // Detections list
+    const list = document.getElementById('detectionsList');
+    list.innerHTML = '';
+
+    if (detections.length === 0) {
+      document.getElementById('emptyState').style.display = 'block';
+      list.style.display = 'none';
+    } else {
+      document.getElementById('emptyState').style.display = 'none';
+      list.style.display = 'flex';
+
+      detections.forEach((d, i) => {
+        const isVerified = d.clip_score >= threshold;
+        const card = document.createElement('div');
+        card.className = 'detection-card';
+        card.style.animationDelay = `${i * 40}ms`;
+
+        const confColor = d.confidence > 0.6 ? 'var(--green)' : d.confidence > 0.4 ? 'var(--amber)' : 'var(--red)';
+        const clipColor = isVerified ? 'var(--green)' : 'var(--red)';
+
+        card.innerHTML = `
+          <div class="det-index">${String(i+1).padStart(2,'0')}</div>
+          <div class="det-main">
+            <div class="det-class">
+              ${d.class}
+              <span class="det-badge ${isVerified ? 'badge-verified' : 'badge-suspicious'}">
+                ${isVerified ? '✓ verified' : '⚠ suspicious'}
+              </span>
+            </div>
+            <div class="score-bars">
+              <div class="score-bar-row">
+                <div class="score-bar-label">YOLO</div>
+                <div class="score-bar-track">
+                  <div class="score-bar-fill" style="width:${d.confidence*100}%;background:${confColor}"></div>
+                </div>
+                <div class="score-bar-num" style="color:${confColor}">${d.confidence.toFixed(3)}</div>
+              </div>
+              <div class="score-bar-row">
+                <div class="score-bar-label">CLIP</div>
+                <div class="score-bar-track">
+                  <div class="score-bar-fill" style="width:${d.clip_score*100}%;background:${clipColor}"></div>
+                </div>
+                <div class="score-bar-num" style="color:${clipColor}">${d.clip_score.toFixed(3)}</div>
+              </div>
+            </div>
+          </div>
+          <div class="det-box">
+            [${d.box[0]}, ${d.box[1]}]<br>
+            [${d.box[2]}, ${d.box[3]}]
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    // Raw JSON with syntax highlighting
+    document.getElementById('jsonView').innerHTML = syntaxHighlight(JSON.stringify(data, null, 2));
+  }
+
+  function syntaxHighlight(json) {
+    return json
+      .replace(/("[\w_]+")\s*:/g, '<span class="json-key">$1</span>:')
+      .replace(/:\s*(".*?")/g, ': <span class="json-str">$1</span>')
+      .replace(/:\s*(\d+\.?\d*)/g, ': <span class="json-num">$1</span>')
+      .replace(/:\s*(true|false)/g, ': <span class="json-bool">$1</span>');
+  }
+
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  function editEndpoint() {
+    const val = prompt('API Endpoint URL:', apiEndpoint);
+    if (val) {
+      apiEndpoint = val.trim();
+      document.getElementById('endpointDisplay').textContent = apiEndpoint;
+    }
+  }
+
+  function getDemoData() {
+    return {
+      "filename": "Snow_Video.mp4",
+      "total_detections": 5,
+      "detections": [
+        {"class": "car", "confidence": 0.529, "clip_score": 0.245, "box": [319, 508, 347, 536]},
+        {"class": "car", "confidence": 0.438, "clip_score": 0.211, "box": [0, 659, 74, 769]},
+        {"class": "car", "confidence": 0.408, "clip_score": 0.238, "box": [102, 490, 178, 580]},
+        {"class": "person", "confidence": 0.712, "clip_score": 0.318, "box": [200, 100, 280, 350]},
+        {"class": "person", "confidence": 0.341, "clip_score": 0.189, "box": [450, 200, 510, 420]}
+      ]
+    };
+  }
+</script>
+</body>
+</html>
